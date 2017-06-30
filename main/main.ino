@@ -3,8 +3,8 @@
 #define button 13
 
 int greenLed[]={3,5,9};
-int sound[]={A0,A1};
-boolean distressMode=true;
+int sound[]={A0,A1,A2};
+boolean distressMode=false;
 
 
 boolean right=false;
@@ -22,6 +22,7 @@ void setup() {
   tone(buzzer,4000);
   delay(500);
   noTone(buzzer);
+  digitalWrite(redLed,HIGH);
   
   
   
@@ -30,17 +31,49 @@ void setup() {
 
 void loop() {
   delay(7);
-  if(digitalRead(button)==HIGH)
-  right=!right;
-  if(distressMode){
-  flashLights(right);
-  //siren(); off cause ANNOYING
-  }
-  else{}//TODO make detection mode for distress. 
   
+  if(distressMode){
+     
+  flashLights(right);
+  siren(); 
+  
+  }
+  else{
+    digitalWrite(redLed,HIGH);
+    for(int i=0;i<3;i++){
+    
+    digitalWrite(greenLed[i],LOW);}
+    distressMode=checkDistress();
+
+
+    
+    }//TODO make detection mode for distress.
+  
+  checkButton();//TODO Change to stop distress after checkDistress works. Also make button press logic better
+  if(!distressMode)
+  noTone(buzzer); 
+  else flashRedLed();
  
 
 }
+boolean checkDistress(){//TODO
+  int soundVals[]={analogRead(sound[0]),analogRead(sound[1]),analogRead(sound[2])}; 
+  int flame=analogRead(A3);
+ Serial.print(soundVals[0]);
+ Serial.print(" ");
+ Serial.print(soundVals[1]);
+ Serial.print(" ");
+ Serial.println(soundVals[2]);
+  return false;
+  
+ }
+long timerbutton=0;
+void checkButton(){
+  if(millis()-timerbutton>200)timerbutton=millis();
+  else return;
+  if(digitalRead(button)==HIGH)
+  distressMode=!distressMode;
+ }
 
 int onLed=0;
 long timer=0;
@@ -48,9 +81,9 @@ long timer=0;
 void flashLights(boolean dir){
   if(millis()-timer>=200){timer=millis();}
   else return;
-  int size=sizeof(greenLed);
-  digitalWrite(redLed,HIGH);
-  for(int i=0;i<size;i++){
+  
+ 
+  for(int i=0;i<3;i++){
     
   digitalWrite(greenLed[i],LOW);}
   digitalWrite(greenLed[onLed],HIGH);
@@ -58,7 +91,7 @@ void flashLights(boolean dir){
   if(dir)
   onLed++;
   else onLed--;
-  size--;
+  
   if(onLed>2)onLed=0;
   if(onLed<0)onLed=2;
 
@@ -81,3 +114,15 @@ tone(buzzer,freq);
 
   
 }
+long redtimer=0;
+boolean on=false;
+void flashRedLed(){
+  if(millis()-redtimer>200){redtimer=millis();}
+  else return;
+  if(on)
+  digitalWrite(redLed,HIGH);
+  else digitalWrite(redLed,LOW);
+  on=!on;
+  
+  
+  }
