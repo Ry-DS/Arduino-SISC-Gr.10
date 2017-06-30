@@ -51,8 +51,10 @@ void loop() {
   
   checkButton();//TODO Change to stop distress after checkDistress works. Also make button press logic better
   if(!distressMode)
+  
   noTone(buzzer); 
   else flashRedLed();
+  
  
 
 }
@@ -97,6 +99,8 @@ void flashLights(boolean dir){
 
   
   }
+
+  
  boolean rise=true;
  const int FREQ_TOP=5000;
  const int FREQ_BOT=2000;
@@ -114,6 +118,8 @@ tone(buzzer,freq);
 
   
 }
+
+
 long redtimer=0;
 boolean on=false;
 void flashRedLed(){
