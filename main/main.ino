@@ -2,19 +2,20 @@
 #define buzzer 7
 #define button 13
 
-int greenLed[]={3,5,9};
+int greenLed[]={3,5,9,11};
 int sound[]={A0,A1,A2};
 boolean distressMode=false;
 
 
-boolean right=false;
+boolean right=true;
+boolean prevButton=false;
 
 
 void setup() {
   Serial.begin(9600);
   pinMode(redLed,OUTPUT);
   pinMode(buzzer,OUTPUT);
-  for(int i=0;i<sizeof(greenLed);i++){
+  for(int i=0;i<4;i++){
   pinMode(greenLed[i],OUTPUT);}
   pinMode(buzzer,OUTPUT);
   pinMode(button,INPUT);
@@ -40,7 +41,7 @@ void loop() {
   }
   else{
     digitalWrite(redLed,HIGH);
-    for(int i=0;i<3;i++){
+    for(int i=0;i<4;i++){
     
     digitalWrite(greenLed[i],LOW);}
     distressMode=checkDistress();
@@ -59,22 +60,37 @@ void loop() {
 
 }
 boolean checkDistress(){//TODO
-  int soundVals[]={analogRead(sound[0]),analogRead(sound[1]),analogRead(sound[2])}; 
-  int flame=analogRead(A3);
- Serial.print(soundVals[0]);
- Serial.print(" ");
- Serial.print(soundVals[1]);
- Serial.print(" ");
- Serial.println(soundVals[2]);
+  int soundVals[]={analogRead(A0),analogRead(A1),analogRead(A2)}; //0 is left, 1 is middle, 2 is right
+  int flame[]={analogRead(A3),analogRead(A4)};//a3 is left a4 is right
+ 
+  if(flame[0]>=100){right=false;return true;}
+  if(flame[1]>=100){right=true;return true;}
+  if(soundVals[0]>=100&&soundVals[1]>=50&&soundVals[2]>=100){
+    if(soundVals[0]>soundVals[2])right=false;
+    else right=true;
+    Serial.println("Informed decision had to be made!");
+    return true;
+    }
+  if(soundVals[0]>=100&&soundVals[1]>=50){right=false;return true;}
+  if(soundVals[2]>=100&&soundVals[1]>=50){right=true;return true;}
+    
+
   return false;
   
  }
 long timerbutton=0;
 void checkButton(){
-  if(millis()-timerbutton>200)timerbutton=millis();
-  else return;
-  if(digitalRead(button)==HIGH)
-  distressMode=!distressMode;
+ // Serial.println(right);
+  //if(millis()-timerbutton>5)timerbutton=millis();
+  //else return;
+  if(digitalRead(button)==HIGH&&!prevButton){
+  distressMode=false;
+  tone(buzzer,6000);
+  delay(200);
+  prevButton=true;
+  }
+  if(digitalRead(button)==LOW&&prevButton)
+  prevButton=false;
  }
 
 int onLed=0;
@@ -85,7 +101,7 @@ void flashLights(boolean dir){
   else return;
   
  
-  for(int i=0;i<3;i++){
+  for(int i=0;i<4;i++){
     
   digitalWrite(greenLed[i],LOW);}
   digitalWrite(greenLed[onLed],HIGH);
@@ -94,8 +110,8 @@ void flashLights(boolean dir){
   onLed++;
   else onLed--;
   
-  if(onLed>2)onLed=0;
-  if(onLed<0)onLed=2;
+  if(onLed>3)onLed=0;
+  if(onLed<0)onLed=3;
 
   
   }
